@@ -55,7 +55,7 @@ slackEvents.on('message.im', message => {
 // *** Handle errors ***
 slackEvents.on('error', (error) => {
   if (error.code === slackEventsApi.errorCodes.TOKEN_VERIFICATION_FAILURE) {
-    // This error type also has a `body` propery containing the request body which failed verification.
+    // This error noetype also has a `body` propery containing the request body which failed verification.
     console.error(`An unverified request was sent to the Slack events Request URL. Request body: \
 ${JSON.stringify(error.body)}`);
   } else {
