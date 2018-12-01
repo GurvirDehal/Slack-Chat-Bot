@@ -12,7 +12,7 @@ const app = express();
 const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
 
 // *** Initialize event adapter using signing secret from environment variables ***
-const slackEvents = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
+const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
 
 // Homepage
@@ -24,12 +24,12 @@ app.get('/', (req, res) => {
 });
 
 // *** Plug the event adapter into the express app as middleware ***
-app.use('/slack/events', slackEvents.expressMiddleware());
+app.use('/slack/events', bot.expressMiddleware());
 
 // *** Attach listeners to the event adapter ***
 
 // *** Greeting any user that says "hi" ***
-slackEvents.on('app_mention', (message) => {
+bot.on('app_mention', (message) => {
   console.log(message);
   
   // Put your code here!
@@ -40,7 +40,7 @@ slackEvents.on('app_mention', (message) => {
 });
 
 // *** Responding to reactions with the same emoji ***
-slackEvents.on('reaction_added', (event) => {
+bot.on('reaction_added', (event) => {
   console.log(event);
   // Respond to the reaction back with the same emoji
   
@@ -51,7 +51,7 @@ slackEvents.on('reaction_added', (event) => {
   
 });
 
-slackEvents.on('message.channels', (message) => {
+bot.on('message.channels', (message) => {
   console.log(message);
   
   // Put your code here!
@@ -60,7 +60,7 @@ slackEvents.on('message.channels', (message) => {
   // We want to respond when someone says "hello" to the bot  
   
 });
-slackEvents.on('message', (message) => {
+bot.on('message', (message) => {
   if (message.bot_id) return;
   console.log(message);
   console.log(pair);
@@ -119,7 +119,7 @@ slackEvents.on('message', (message) => {
 });
 
 // *** Handle errors ***
-slackEvents.on('error', (error) => {
+bot.on('error', (error) => {
   if (error.code === slackEventsApi.errorCodes.TOKEN_VERIFICATION_FAILURE) {
     // This error noetype also has a `body` propery containing the request body which failed verification.
     console.error(`An unverified request was sent to the Slack events Request URL. Request body: \
