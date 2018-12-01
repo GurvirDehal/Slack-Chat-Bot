@@ -16,7 +16,7 @@ const slackEvents = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_
 app.get('/', (req, res) => {
   const url = `https://${req.hostname}/slack/events`;
   res.setHeader('Content-Type', 'text/html');
-  
+
   return res.send(`<pre>Copy this link to paste into the event URL field: <a href="${url}">${url}</a></pre>`);
 });
 
@@ -28,24 +28,24 @@ app.use('/slack/events', slackEvents.expressMiddleware());
 // *** Greeting any user that says "hi" ***
 slackEvents.on('app_mention', (message) => {
   console.log(message);
-  // Only deal with messages that have no subtype (plain messages) and contain 'hi'
-  if (!message.subtype && /hi/i.test(message.text)) {
-    
-    // Respond to the message back in the same channel
-    slack.chat.postMessage({ channel: message.channel, text: `Hello <@${message.user}>! :tada:` })
-      .catch(console.error);
-  }
+  
+  // Put your code here!
+  // 
+  // What does the `message` object look like?
+  // We want to respond when someone says "hello" to the bot  
+  
 });
 
 // *** Responding to reactions with the same emoji ***
 slackEvents.on('reaction_added', (event) => {
   console.log(event);
   // Respond to the reaction back with the same emoji
-  slack.chat.postMessage({ channel: event.item.channel, thread_ts:event.item.ts, text: `:${event.reaction}:` })
-    .then((res) => {
-      console.log('Message sent: ', res.ts);
-    })
-    .catch(console.error);
+  
+  // Put your code here!
+  //
+  // What does the `event` object look like?
+  // We want to respond when someone reacts to _any_ message
+  
 });
 
 // *** Handle errors ***
