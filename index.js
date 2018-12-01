@@ -2,6 +2,7 @@ const slackEventsApi = require('@slack/events-api');
 const SlackClient = require('@slack/client').WebClient;
 const express = require('express');
 let pair = []
+const score = require('score.json')
 
 // *** Initialize an Express application
 const app = express();
@@ -59,10 +60,42 @@ slackEvents.on('message.channels', (message) => {
   
 });
 slackEvents.on('message', (message) => {
-  if (message.channel_type != 'im') return;
-  console.log(message.text);
-  if(pair
   if (message.bot_id) return;
+  if (message.channel_type != 'im') return;
+  console.log(message);
+  if(pair.includes(message.channel)){
+     //code
+  } else {
+    switch(message.text){
+            case('pair'):
+                pair.push(message.channel)
+                if(pair.length%2 == 1){
+                    slack.chat.postMessage({
+                      channel: message.channel,
+                      text: 'Please wait to be paired'
+                    })
+                } else {
+                    slack.chat.postMessage({
+                      channel: message.channel,
+                      text: 'You have been paired'
+                    })
+                    slack.chat.postMessage({
+                      channel: pair[pair.length-2],
+                      text: 'You have been paired'
+                    })
+                }
+                if(!score[message.channel]){                score[message.channel] = 0
+                fs.writeFile("./score.json", JSON.stringify(score), (err) => {
+                    if (err) console.log(err)
+                });
+                break;
+            case('help'):
+                message.author.send('Insert help here')
+                break;
+        }
+    //code
+  }
+     
   slack.chat.postMessage({
     channel: message.channel,
     text: 'what do you want?'
