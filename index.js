@@ -48,6 +48,10 @@ slackEvents.on('reaction_added', (event) => {
   
 });
 
+slackEvents.on('message.im', message => {
+  console.log(message.user)
+})
+
 // *** Handle errors ***
 slackEvents.on('error', (error) => {
   if (error.code === slackEventsApi.errorCodes.TOKEN_VERIFICATION_FAILURE) {
