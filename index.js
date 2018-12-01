@@ -2,7 +2,8 @@ const slackEventsApi = require('@slack/events-api');
 const SlackClient = require('@slack/client').WebClient;
 const express = require('express');
 let pair = []
-const score = require('score.json')
+const score = require('./score.json')
+const fs = require('fs');
 
 // *** Initialize an Express application
 const app = express();
@@ -61,10 +62,25 @@ slackEvents.on('message.channels', (message) => {
 });
 slackEvents.on('message', (message) => {
   if (message.bot_id) return;
-  if (message.channel_type != 'im') return;
   console.log(message);
+  console.log(pair);
   if(pair.includes(message.channel)){
-     //code
+     let index = pair.findIndex(i=> i==message.channel)
+        if(index+1==pair.length&&pair.length%2 == 1) return;
+        if(message.text=='leave'){
+          //code
+        }
+        if(index%2 == 0){
+            slack.chat.postMessage({
+              channel: pair[index + 1],
+              text: message.text
+            })
+        } else {
+            slack.chat.postMessage({
+              channel: pair[index - 1],
+              text: message.text
+            })
+        }
   } else {
     switch(message.text){
             case('pair'):
@@ -84,27 +100,21 @@ slackEvents.on('message', (message) => {
                       text: 'You have been paired'
                     })
                 }
-                if(!score[message.channel]){                score[message.channel] = 0
-                fs.writeFile("./score.json", JSON.stringify(score), (err) => {
-                    if (err) console.log(err)
-                });
+                if(!score[message.channel]){
+                  score[message.channel] = 0
+                  fs.writeFile("./score.json", JSON.stringify(score), (err) => {
+                      if (err) console.log(err)
+                  });
+                }
                 break;
             case('help'):
-                message.author.send('Insert help here')
+                slack.chat.postMessage({
+                      channel: message.channel,
+                      text: 'To begin, type "pair".'
+                    })
                 break;
         }
-    //code
   }
-     
-  slack.chat.postMessage({
-    channel: message.channel,
-    text: 'what do you want?'
-  })
-  
-  // Put your code here!
-  // 
-  // What does the `message` object look like?
-  // We want to respond when someone says "hello" to the bot  
   
 });
 
