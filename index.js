@@ -49,7 +49,7 @@ slackEvents.on('reaction_added', (event) => {
 });
 
 slackEvents.on('message.im', message => {
-  console.log(message.user)
+  console.log(message)
 })
 
 // *** Handle errors ***
