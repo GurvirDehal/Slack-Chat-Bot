@@ -65,52 +65,50 @@ bot.on('message', (message) => {
   if (message.text == 'help'){
     slack.chat.postMessage({
         channel: message.channel,
-        text: 'To begin, type `!pair` to get paired to a partner. \n Once you are paired, you can type `!leave` at any time to leave the conversation. \n If you would like to report your partner for inappropriate comments, type `!report`.'
+        text: 'To begin, type `!pair` to get paired to a partner. \n \
+              Once you are paired, you can type `!leave` at any time to leave the conversation. \n \
+              If you would like to report your partner for inappropriate comments, type `!report`.'
       })
      return;
   }
+  function send(c,m) {
+    slack.chat.postMessage({
+      channel: c,
+      text: m
+    })
+  }
   if(pair.includes(message.channel)){
-     let index = pair.findIndex(i=> i==message.channel)
-        if(index+1==pair.length&&pair.length%2 == 1) return;
-        switch(message.text){
-            case('!leave'):
-              if(index%2 == 0){
-                slack.chat.postMessage({
-                      channel: pair[index],
-                      text: 'You have left the chat'
-                    })
-                slack.chat.postMessage({
-                  channel: pair[index+1],
-                  text: 'Your partner has left the chat'
-                })
-                pair.splice(index,2)
-              } else {
-                slack.chat.postMessage({
-                      channel: pair[index],
-                      text: 'You have left the chat'
-                    })
-                slack.chat.postMessage({
-                  channel: pair[index-1],
-                  text: 'Your partner has left the chat'
-                })
-                pair.splice(index-1,2)
-              }
-              break;
-            case('!report'):
-              break;
-            default:
-              if(index%2 == 0){
-                  slack.chat.postMessage({
-                    channel: pair[index + 1],
-                    text: message.text
-                  })
-              } else {
-                  slack.chat.postMessage({
-                    channel: pair[index - 1],
-                    text: message.text
-                  })
-              }
+    let index = pair.findIndex(i=> i==message.channel)
+
+    if(index+1==pair.length&&pair.length%2 == 1) return;
+    switch(message.text){
+      case('!leave'):
+        if(index%2 == 0){
+          send(pair[index],'You have left the chat')
+          send(pair[index+1],'Your partner has left the chat')
+          pair.splice(index,2)
+        } else {
+          send(pair[index],'You have left the chat')
+          send(pair[index-1],'Your partner has left the chat')
+          pair.splice(index-1,2)
         }
+        break;
+      case('!report'):
+        break;
+      default:
+        if(index%2 == 0){
+          send(pair[index + 1],message.text)
+            slack.chat.postMessage({
+              channel: pair[index + 1],
+              text: message.text
+            })
+        } else {
+            slack.chat.postMessage({
+              channel: pair[index - 1],
+              text: message.text
+            })
+        }
+    }
         
   } else {
     switch(message.text){
@@ -124,11 +122,13 @@ bot.on('message', (message) => {
                 } else {
                     slack.chat.postMessage({
                       channel: message.channel,
-                      text: 'You have been paired'
+                      text: 'You have been paired. Type `!leave` at any time to leave the conversation. \n \
+                            If you would like to report your partner for inappropriate comments, type `!report`.'
                     })
                     slack.chat.postMessage({
                       channel: pair[pair.length-2],
-                      text: 'You have been paired'
+                      text: 'You have been paired. Type `!leave` at any time to leave the conversation. \n \
+                            If you would like to report your partner for inappropriate comments, type `!report`.'
                     })
                 }
                 if(!score[message.channel]){
