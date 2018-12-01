@@ -1,13 +1,13 @@
 const slackEventsApi = require('@slack/events-api');
 const SlackClient = require('@slack/client').WebClient;
 const express = require('express');
-let pair = []
-const score = require('./score.json')
+const score = require('./score.json');
+const report = require('./report.json');
 const fs = require('fs');
-
+const request = require('request');
 //Authorize users
 
-
+let pair = []
 
 // *** Initialize an Express application
 const app = express();
@@ -114,6 +114,19 @@ bot.on('message', (message) => {
         }
         break;
       case('!report'):
+        if(index%2 == 0){
+          if(!report[pair[index+1]]){
+            report[pair[index+1]] = 1
+          }
+        } else {
+          if(!report[pair[index-1]]){
+            report[pair[index-1]] = 1
+          }
+        }
+        fs.writeFile("./report.json", JSON.stringify(report), (err) => {
+                if (err) console.log(err)
+        });
+
         break;
       default:
         if(index%2 == 0){
@@ -124,26 +137,26 @@ bot.on('message', (message) => {
     }
   } else {
     switch(message.text){
-            case('!pair'):
-                pair.push(message.channel)
-                if(pair.length%2 == 1){
-                  send(message.channel,'Please wait to be paired')
-                } else {
-                  send(message.channel,'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-                            If you would like to report your partner for inappropriate comments, type `!report`.')
-                  send(pair[pair.length-2],'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-                            If you would like to report your partner for inappropriate comments, type `!report`.')
-                }
-                if(!score[message.channel]){
-                  score[message.channel] = 0
-                  fs.writeFile("./score.json", JSON.stringify(score), (err) => {
-                      if (err) console.log(err)
-                  });
-                }
-                break;
-            default:
-              send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
-        }
+      case('!pair'):
+          pair.push(message.channel)
+          if(pair.length%2 == 1){
+            send(message.channel,'Please wait to be paired')
+          } else {
+            send(message.channel,'You have been paired. Type `!leave` at any time to leave the conversation. \n \
+                      If you would like to report your partner for inappropriate comments, type `!report`.')
+            send(pair[pair.length-2],'You have been paired. Type `!leave` at any time to leave the conversation. \n \
+                      If you would like to report your partner for inappropriate comments, type `!report`.')
+          }
+          if(!score[message.channel]){
+            score[message.channel] = 0
+            fs.writeFile("./score.json", JSON.stringify(score), (err) => {
+                if (err) console.log(err)
+            });
+          }
+          break;
+      default:
+        send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
+    }
   }
   
 });
@@ -164,3 +177,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`server listening on port ${port}`);
 });
+
