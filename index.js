@@ -48,9 +48,24 @@ slackEvents.on('reaction_added', (event) => {
   
 });
 
-slackEvents.on('message.im', message => {
-  console.log(message)
-})
+slackEvents.on('message.channels', (message) => {
+  console.log(message);
+  
+  // Put your code here!
+  // 
+  // What does the `message` object look like?
+  // We want to respond when someone says "hello" to the bot  
+  
+});
+slackEvents.on('message', (message) => {
+  console.log(message);
+  
+  // Put your code here!
+  // 
+  // What does the `message` object look like?
+  // We want to respond when someone says "hello" to the bot  
+  
+});
 
 // *** Handle errors ***
 slackEvents.on('error', (error) => {
