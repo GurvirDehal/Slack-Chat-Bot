@@ -67,23 +67,33 @@ bot.on('message', (message) => {
   if(pair.includes(message.channel)){
      let index = pair.findIndex(i=> i==message.channel)
         if(index+1==pair.length&&pair.length%2 == 1) return;
-        if(message.text=='leave'){
-          //code
+        switch(message.text){
+            case('!leave'):
+              if(index%2 == 0){
+                //pair = pair.splice(index,2)
+              } else {
+                
+              }
+              break
+            case('!report'):
+              break
+            default:
+              if(index%2 == 0){
+                  slack.chat.postMessage({
+                    channel: pair[index + 1],
+                    text: message.text
+                  })
+              } else {
+                  slack.chat.postMessage({
+                    channel: pair[index - 1],
+                    text: message.text
+                  })
+              }
         }
-        if(index%2 == 0){
-            slack.chat.postMessage({
-              channel: pair[index + 1],
-              text: message.text
-            })
-        } else {
-            slack.chat.postMessage({
-              channel: pair[index - 1],
-              text: message.text
-            })
-        }
+        
   } else {
     switch(message.text){
-            case('pair'):
+            case('!pair'):
                 pair.push(message.channel)
                 if(pair.length%2 == 1){
                     slack.chat.postMessage({
@@ -110,7 +120,11 @@ bot.on('message', (message) => {
             case('help'):
                 slack.chat.postMessage({
                       channel: message.channel,
-                      text: 'To begin, type "pair".'
+                      text: 'To begin, type "!pair" to get paired to a partner. \n nce you are paired, you can type "!leave" at any time to leave the conversation.'
+                    })
+                slack.chat.postMessage({
+                      channel: message.channel,
+                      text: 'If you would like to report your partner for inappropriate comments, type "!report".'
                     })
                 break;
         }
