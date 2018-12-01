@@ -62,21 +62,42 @@ bot.on('message.channels', (message) => {
 });
 bot.on('message', (message) => {
   if (message.bot_id) return;
-  console.log(message);
-  console.log(pair);
+  if (message.text == 'help'){
+    slack.chat.postMessage({
+        channel: message.channel,
+        text: 'To begin, type `!pair` to get paired to a partner. \n Once you are paired, you can type `!leave` at any time to leave the conversation. \n If you would like to report your partner for inappropriate comments, type `!report`.'
+      })
+     return;
+  }
   if(pair.includes(message.channel)){
      let index = pair.findIndex(i=> i==message.channel)
         if(index+1==pair.length&&pair.length%2 == 1) return;
         switch(message.text){
             case('!leave'):
               if(index%2 == 0){
-                //pair = pair.splice(index,2)
+                slack.chat.postMessage({
+                      channel: pair[index],
+                      text: 'You have left the chat'
+                    })
+                slack.chat.postMessage({
+                  channel: pair[index+1],
+                  text: 'Your partner has left the chat'
+                })
+                pair.splice(index,2)
               } else {
-                
+                slack.chat.postMessage({
+                      channel: pair[index],
+                      text: 'You have left the chat'
+                    })
+                slack.chat.postMessage({
+                  channel: pair[index-1],
+                  text: 'Your partner has left the chat'
+                })
+                pair.splice(index-1,2)
               }
-              break
+              break;
             case('!report'):
-              break
+              break;
             default:
               if(index%2 == 0){
                   slack.chat.postMessage({
@@ -117,16 +138,11 @@ bot.on('message', (message) => {
                   });
                 }
                 break;
-            case('help'):
-                slack.chat.postMessage({
+            default:
+              slack.chat.postMessage({
                       channel: message.channel,
-                      text: 'To begin, type "!pair" to get paired to a partner. \n nce you are paired, you can type "!leave" at any time to leave the conversation.'
-                    })
-                slack.chat.postMessage({
-                      channel: message.channel,
-                      text: 'If you would like to report your partner for inappropriate comments, type "!report".'
-                    })
-                break;
+                      text: 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.'
+              })          
         }
   }
   
