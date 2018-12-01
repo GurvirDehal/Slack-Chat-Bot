@@ -1,5 +1,8 @@
 # Node SDK Tutorial: "Greet & React" 
 
+🙌 Originally remixed from [https://glitch.com/edit/#!/greet-bot](https://glitch.com/edit/#!/greet-bot) 🙌
+
+
 This example shows a fully functioning but very simple application using the
 [Slack Event Adapter](https://github.com/slackapi/node-slack-events-api).
 
@@ -28,8 +31,7 @@ changes
 ### Remix this porject
 
 1. Get the code
-  - "Remix" the code to your Glitch repo:
-	[glitch.com/edit/#!/remix/greet-bot](https://glitch.com/edit/#!/remix/greet-bot)
+  - "Remix" the code to your Glitch repo
 2. Set the environment variables (all available on the *Basic Information* page) to `.env` 
 	- `SLACK_SIGNING_SECRET`: Your app's _Signing Secret_
   - `SLACK_ACCESS_TOKEN` : Your bot token (Install app once to get an access token, `-xoxb-`)

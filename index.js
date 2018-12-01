@@ -12,6 +12,14 @@ const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
 const slackEvents = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
 
+// Homepage
+app.get('/', (req, res) => {
+  const url = `https://${req.hostname}/slack/events`;
+  res.setHeader('Content-Type', 'text/html');
+  
+  return res.send(`<pre>Copy this link to paste into the event URL field: <a href="${url}">${url}</a></pre>`);
+});
+
 // *** Plug the event adapter into the express app as middleware ***
 app.use('/slack/events', slackEvents.expressMiddleware());
 
