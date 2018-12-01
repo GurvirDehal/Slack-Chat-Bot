@@ -1,6 +1,7 @@
 const slackEventsApi = require('@slack/events-api');
 const SlackClient = require('@slack/client').WebClient;
 const express = require('express');
+let pair = []
 
 // *** Initialize an Express application
 const app = express();
@@ -58,7 +59,14 @@ slackEvents.on('message.channels', (message) => {
   
 });
 slackEvents.on('message', (message) => {
-  console.log(message);
+  if (message.channel_type != 'im') return;
+  console.log(message.text);
+  if(pair
+  if (message.bot_id) return;
+  slack.chat.postMessage({
+    channel: message.channel,
+    text: 'what do you want?'
+  })
   
   // Put your code here!
   // 
