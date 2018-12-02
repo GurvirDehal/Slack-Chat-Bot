@@ -19,22 +19,18 @@ const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
 const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
 //OAuth page
-app.get('/auth', function(req, res){
-  if (!req.query.code) { // access denied
-    return;
-  }
-  var data = {form: {
-    client_id: process.env.SLACK_CLIENT_ID,
-    client_secret: process.env.SLACK_CLIENT_SECRET,
-    code: req.query.code
-  }};
-  request.post('https://slack.com/api/oauth.access', data, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      // Get an auth token
-      let oauthToken = JSON.parse(body).access_token;
-      // OAuth done- redirect the user to wherever
-      //res.redirect(`https://${req.hostname}`);
-    }
+app.get('/auth', function(req, res){ 
+  let data = {form: { 
+    client_id: process.env.SLACK_CLIENT_ID, 
+    client_secret: process.env.SLACK_CLIENT_SECRET, 
+    code: req.query.code 
+  }}; 
+  request.post('https://slack.com/api/oauth.access', data, function (error, response, body) { 
+    if (!error && response.statusCode == 200) { 
+      // You are done. 
+      // If you want to get team info, you need to get the token here 
+      let token = JSON.parse(body).access_token; // Auth token 
+    } 
   })
 });
 
@@ -101,19 +97,21 @@ bot.on('message', (message) => {
     let index = pair.findIndex(i=> i==message.channel)
 
     if(index+1==pair.length&&pair.length%2 == 1) return;
+    let partner = 0;
+    if(index%2 == 0){
+      partner = index+1;
+    } else {
+      partner = index-1;
+    }
     switch(message.text){
       case('!leave'):
+        score[pair[index]] += 5
+        score[pair[partner]] += 5
+        send(pair[index],'You have left the chat, you have earned 5 points')
+        send(pair[partner],'Your partner has left the chat, you have earned 5 points')
         if(index%2 == 0){
-          score[pair[index]] += 5
-          score[pair[index+1]] += 5
-          send(pair[index],'You have left the chat, you have earned 5 points')
-          send(pair[index+1],'Your partner has left the chat, you have earned 5 points')
           pair.splice(index,2)
         } else {
-          score[pair[index]] += 5
-          score[pair[index-1]] += 5
-          send(pair[index],'You have left the chat, you have earned 5 points')
-          send(pair[index-1],'Your partner has left the chat, you have earned 5 points')
           pair.splice(index-1,2)
         }
         fs.writeFile("./score.json", JSON.stringify(score), (err) => {
@@ -121,34 +119,32 @@ bot.on('message', (message) => {
         });
         break;
       case('!report'):
-        let partner = 0;
-        if(index%2 == 0)
-          partner = index+1;
-        else
-          partner = index-1;
         if(!report[pair[partner]]){
             report[pair[partner]] = 1
         } else {
             report[pair[partner]] += 1
         }
-        
+        score[pair[index]] += 1
+        send(pair[index],'User reported, you have earned 1 points')
+        send(pair[partner],'You have been reported, conversation terminated')
+        if(index%2 == 0){
+          pair.splice(index,2)
+        } else {
+          pair.splice(partner,2)
+        }
         fs.writeFile("./report.json", JSON.stringify(report), (err) => {
                 if (err) console.log(err)
         });
         break;
       default:
-        if(index%2 == 0){
-          send(pair[index + 1],message.text)
-        } else {
-          send(pair[index - 1],message.text)
-        }
+        send(pair[partner],message.text);
     }
   } else {
     switch(message.text){
       case('!pair'):
         if(report[message.channel]){
           if (report[message.channel] > 4) {
-            return send(message.channel, "You have been banned from using this feature")
+            return send(message.channel, "You have been banned from using this feature.")
           }
         }
         pair.push(message.channel)
@@ -195,7 +191,6 @@ ${JSON.stringify(error.body)}`);
 });
 
 // Start the express application
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`server listening on port ${port}`);
 });
