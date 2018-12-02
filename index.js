@@ -11,7 +11,7 @@ let pair = []
 const app = express();
 
 // *** Initialize a client with your access token
-const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
+const slack = new SlackClient();
 
 // *** Initialize event adapter using signing secret from environment variables ***
 const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
@@ -55,10 +55,12 @@ app.use('/slack/events', bot.expressMiddleware());
 
 // *** Attach listeners to the event adapter ***
 
-bot.on('message', (message) => {
+bot.on('message.im', (message) => {
+  console.log(message)
   if (message.bot_id) return;
   function send(c,m) {
     slack.chat.postMessage({
+      token: process.env.SLACK_ACCESS_TOKEN,
       channel: c,
       text: m
     })
