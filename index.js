@@ -22,6 +22,7 @@ var translate = require('yandex-translate')(key);
 
 
 //OAuth page
+
 app.get('/auth', function(req, res){
   if (!req.query.code) { // access denied
     return;
@@ -78,7 +79,6 @@ If you would like to report your partner for inappropriate comments, type `!repo
     } else {
       partner = index-1;
     }
-    console.log(slack.channel.info(pair[partner]));
     switch(message.text){
       case('!leave'):
         score[pair[index]] += 5
@@ -148,11 +148,12 @@ If you would like to report your partner for inappropriate comments, type `!repo
         }
         send(message.channel, 'You have ' + score[message.channel] + ' points')
         break;
-      case('bagel'):
+      case('I like moose'):
         function trans(content,language,channel){
           translate.translate(content, { to: language }, function(err, res){send(channel,res.text[0]);});
         }
-        trans(message.text,'fr',message.channel);
+        trans(message.text,'es',message.channel);
+        break;
       default:
         send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
     }
