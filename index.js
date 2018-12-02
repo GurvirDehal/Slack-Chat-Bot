@@ -5,17 +5,11 @@ const score = require('./score.json');
 const report = require('./report.json');
 const fs = require('fs');
 const request = require('request');
-
+const app = express();
+const slack = new SlackClient();
+const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 let pair = []
 let lan = []
-
-const app = express();
-
-// *** Initialize a client with your access token
-const slack = new SlackClient();
-
-// *** Initialize event adapter using signing secret from environment variables ***
-const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
 //translation
 const key = 'trnsl.1.1.20181201T210634Z.0b916835f818a2f5.3299f73a9189648ee76382a52136eb27824a592c';
@@ -23,7 +17,6 @@ var translate = require('yandex-translate')(key);
 
 
 //OAuth page
-
 app.get('/auth', function(req, res){
   if (!req.query.code) { // access denied
     return;
@@ -34,12 +27,10 @@ app.get('/auth', function(req, res){
     code: req.query.code
   }};
   request.post('https://slack.com/api/oauth.access', data, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
+    if (!error && response.statusCode == 200) 
       // Get an auth token
-      let oauthToken = JSON.parse(body).access_token;
-      
-      
-    }
+      var oauthToken = JSON.parse(body).access_token;
+    
   })
 });
 
@@ -51,10 +42,7 @@ app.get('/', (req, res) => {
   return res.send(`<pre>Copy this link to paste into the event URL field: <a href="${url}">${url}</a></pre>`);
 });
 
-// *** Plug the event adapter into the express app as middleware ***
 app.use('/slack/events', bot.expressMiddleware());
-
-// *** Attach listeners to the event adapter ***
 
 bot.on('message', (message) => {
   if (message.bot_id) return;
@@ -69,7 +57,8 @@ bot.on('message', (message) => {
   if (message.text == '!help'){
     send(message.channel,'To begin, type `!pair` to get paired to a partner. \n \
 Once you are paired, you can type `!leave` at any time to leave the conversation. \n \
-If you would like to report your partner for inappropriate comments, type `!report`. \n The check your points, type `!points`.')
+If you would like to report your partner for inappropriate comments, type `!report`. \n The check your points, type `!points`. \n \
+To change your language, type `!language [lang]`.')
      return;
   }
   if(pair.includes(message.channel)){
@@ -128,19 +117,15 @@ If you would like to report your partner for inappropriate comments, type `!repo
             case('help'):
               send(message.channel, 'es = Spanish, fr = French, ar = Arabic... Usage: `!language es`. For more languages, see iso639-2 codes')
               break
-            default:
+            default: 
               if(message.text.split(' ')[1].length != 2) return send(message.channel, 'Please select a valid language code')
               lan[index] = message.text.split(' ')[1]
               send(message.channel, 'language: ' + message.text.split(' ')[1])
         }
         break;
       default:
-        if(lan[partner] == 'en') {
-          send(pair[partner],message.text);
-        } else {
-          trans(message.text, lan[partner], pair[partner]).catch(error=>{console.log(error)})
-        }
-    }
+        trans(message.text, lan[partner], pair[partner]).catch(error=>{console.log(error)})
+    } 
   } else {
     switch(message.text){
       case('!pair'):
