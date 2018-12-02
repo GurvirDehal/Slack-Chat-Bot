@@ -131,6 +131,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
               break
             default:
               lan[index] = message.text.split(' ')[1]
+              send(message.channel, 'language: ' + message.text.split(' ')[1])
         }
         break;
       default:
