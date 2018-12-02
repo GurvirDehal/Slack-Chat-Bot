@@ -33,7 +33,7 @@ app.get('/auth', function(req, res){
       // Get an auth token
       let oauthToken = JSON.parse(body).access_token;
       // OAuth done- redirect the user to wherever
-      res.redirect(__dirname + "/public/success.html");
+      //res.redirect(`https://${req.hostname}`);
     }
   })
 });
@@ -104,29 +104,37 @@ bot.on('message', (message) => {
     switch(message.text){
       case('!leave'):
         if(index%2 == 0){
-          send(pair[index],'You have left the chat')
-          send(pair[index+1],'Your partner has left the chat')
+          score[pair[index]] += 5
+          score[pair[index+1]] += 5
+          send(pair[index],'You have left the chat, you have earned 5 points')
+          send(pair[index+1],'Your partner has left the chat, you have earned 5 points')
           pair.splice(index,2)
         } else {
-          send(pair[index],'You have left the chat')
-          send(pair[index-1],'Your partner has left the chat')
+          score[pair[index]] += 5
+          score[pair[index-1]] += 5
+          send(pair[index],'You have left the chat, you have earned 5 points')
+          send(pair[index-1],'Your partner has left the chat, you have earned 5 points')
           pair.splice(index-1,2)
         }
+        fs.writeFile("./score.json", JSON.stringify(score), (err) => {
+              if (err) console.log(err)
+        });
         break;
       case('!report'):
-        if(index%2 == 0){
-          if(!report[pair[index+1]]){
-            report[pair[index+1]] = 1
-          }
+        let partner = 0;
+        if(index%2 == 0)
+          partner = index+1;
+        else
+          partner = index-1;
+        if(!report[pair[partner]]){
+            report[pair[partner]] = 1
         } else {
-          if(!report[pair[index-1]]){
-            report[pair[index-1]] = 1
-          }
+            report[pair[partner]] += 1
         }
+        
         fs.writeFile("./report.json", JSON.stringify(report), (err) => {
                 if (err) console.log(err)
         });
-
         break;
       default:
         if(index%2 == 0){
@@ -138,22 +146,36 @@ bot.on('message', (message) => {
   } else {
     switch(message.text){
       case('!pair'):
-          pair.push(message.channel)
-          if(pair.length%2 == 1){
-            send(message.channel,'Please wait to be paired')
-          } else {
-            send(message.channel,'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-                      If you would like to report your partner for inappropriate comments, type `!report`.')
-            send(pair[pair.length-2],'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-                      If you would like to report your partner for inappropriate comments, type `!report`.')
+        if(report[message.channel]){
+          if (report[message.channel] > 4) {
+            return send(message.channel, "You have been banned from using this feature")
           }
-          if(!score[message.channel]){
-            score[message.channel] = 0
-            fs.writeFile("./score.json", JSON.stringify(score), (err) => {
-                if (err) console.log(err)
-            });
-          }
-          break;
+        }
+        pair.push(message.channel)
+        if(pair.length%2 == 1){
+          send(message.channel,'Please wait to be paired')
+        } else {
+          send(message.channel,'You have been paired. Type `!leave` at any time to leave the conversation. \n \
+                    If you would like to report your partner for inappropriate comments, type `!report`.')
+          send(pair[pair.length-2],'You have been paired. Type `!leave` at any time to leave the conversation. \n \
+                    If you would like to report your partner for inappropriate comments, type `!report`.')
+        }
+        if(!score[message.channel]){
+          score[message.channel] = 0
+          fs.writeFile("./score.json", JSON.stringify(score), (err) => {
+              if (err) console.log(err)
+          });
+        }
+        break;
+      case('!points'):
+        if(!score[message.channel]){
+          score[message.channel] = 0
+          fs.writeFile("./score.json", JSON.stringify(score), (err) => {
+              if (err) console.log(err)
+          });
+        }
+        send(message.channel, 'You have ' + score[message.channel] + ' points')
+        break;
       default:
         send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
     }
