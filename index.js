@@ -18,12 +18,13 @@ const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
 // *** Initialize event adapter using signing secret from environment variables ***
 const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
-const key = 'trnsl.1.1.20181201T210634Z.0b916835f818a2f5.3299f73a9189648ee76382a52136eb27824a592c';
-var translate = require('yandex-translate')(key);
 
-function trans(text, language){
+const key = 'trnsl.1.1.20181201T210634Z.0b916835f818a2f5.3299f73a9189648ee76382a52136eb27824a592c';
+const translate = require('yandex-translate')(key);
+
+async function trans(text, language){
   let translated = '9'
-  translate.translate(text, { to: language },function(err,res){translated = res.text})
+  await translate.translate(text, { to: language },function(err,res){translated = res['text'][0]})
   console.log(translated)
   return translated
 }
@@ -31,29 +32,32 @@ function trans(text, language){
 let a = trans('works','fr')
 console.log(a)
 
+
 //OAuth page
 
-//app.get('/auth', function(req, res){ 
-  var data = {form: { 
-    client_id: process.env.SLACK_CLIENT_ID, 
-    client_secret: process.env.SLACK_CLIENT_SECRET, 
-//    code: req.query.code 
-  }}; 
-  request.post('https://slack.com/api/oauth.access', data, function (error, response, body) { 
-    if (!error && response.statusCode == 200){  
-      // You are done. 
-      // If you want to get team info, you need to get the token here 
-      let token = JSON.parse(body).access_token; // Auth token 
+app.get('/auth', function(req, res){
+  if (!req.query.code) { // access denied
+    return;
   }
-    let token = JSON.parse(body).access_token;
-    request.post('https://slack.com/api/team.info', {form: {token: token}}, function (error, response, body) { 
-    if (!error && response.statusCode == 200) { 
-//    let team = JSON.parse(body).team.domain; 
-//    res.redirect('http://' +team+ '.slack.com'); 
-//  } 
-//});
-//  })
-//});
+  var data = {form: {
+    client_id: process.env.SLACK_CLIENT_ID,
+    client_secret: process.env.SLACK_CLIENT_SECRET,
+    code: req.query.code
+  }};
+  request.post('https://slack.com/api/oauth.access', data, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      // Get an auth token
+      let token = JSON.parse(body).access_token;
+      // OAuth done- redirect the user to wherever
+      request.post('https://slack.com/api/team.info', {form: {token: token}}, function (error, response, body) { 
+      if (!error && response.statusCode == 200) { 
+      let team = JSON.parse(body).team.domain; 
+      res.redirect('http://' +team+ '.slack.com'); 
+  } 
+});
+    }
+  })
+});
 
 // Homepage
 app.get('/', (req, res) => {
@@ -86,6 +90,7 @@ bot.on('message', (message) => {
     let index = pair.findIndex(i=> i==message.channel)
 
     if(index+1==pair.length&&pair.length%2 == 1) return;
+    
     let partner = 0;
     if(index%2 == 0){
       partner = index+1;
@@ -183,4 +188,3 @@ ${JSON.stringify(error.body)}`);
 app.listen(() => {
   console.log(`bot is ready`);
 });
-
