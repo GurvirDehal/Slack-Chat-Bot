@@ -63,7 +63,7 @@ bot.on('message', (message) => {
       text: m
     })
   }
-  if (message.text == 'help'){
+  if (message.text == '!help'){
     send(message.channel,'To begin, type `!pair` to get paired to a partner. \n \
 Once you are paired, you can type `!leave` at any time to leave the conversation. \n \
 If you would like to report your partner for inappropriate comments, type `!report`.')
@@ -128,9 +128,9 @@ If you would like to report your partner for inappropriate comments, type `!repo
           send(message.channel,'Please wait to be paired')
         } else {
           send(message.channel,'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-                    If you would like to report your partner for inappropriate comments, type `!report`.')
+If you would like to report your partner for inappropriate comments, type `!report`.')
           send(pair[pair.length-2],'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-                    If you would like to report your partner for inappropriate comments, type `!report`.')
+If you would like to report your partner for inappropriate comments, type `!report`.')
         }
         if(!score[message.channel]){
           score[message.channel] = 0
@@ -155,7 +155,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
         trans(message.text,'es',message.channel);
         break;
       default:
-        send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
+        send(message.channel, 'Sorry, I did not understand that. Type `!help` for help or type `!pair` to get matched.')        
     }
   }
   
