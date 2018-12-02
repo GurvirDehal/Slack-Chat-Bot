@@ -55,9 +55,10 @@ app.use('/slack/events', bot.expressMiddleware());
 
 // *** Attach listeners to the event adapter ***
 
-bot.on('message.im', (message) => {
-  console.log(message)
+bot.on('message', (message) => {
+  console.log(message);
   if (message.bot_id) return;
+  if (message.channel_type != 'im') return;
   function send(c,m) {
     slack.chat.postMessage({
       token: process.env.SLACK_ACCESS_TOKEN,
