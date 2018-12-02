@@ -1,19 +1,23 @@
 {
-  "name": "@slack/events-api-example-greet-and-react",
-  "version": "1.0.0",
+  "name": "yandex-translate",
+  "version": "2.1.2",
   "private": true,
-  "description": "A basic example of using the Slack Events API Adapter for Node",
+  "description": "Yandex.Translate API client",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "test": "node index.js"
   },
-  "author": "Ankur Oberoi and Tomomi Imura <opensource@slack.com>",
+  "author": "Andrey Sidorov <sidorares@yandex.ru>",
   "license": "MIT",
   "dependencies": {
-    "@slack/client": "^4.3.1",
-    "@slack/events-api": "^2.0.0",
-    "express": "^4.16.3",
     "request": "^2.88.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/sidorares/yandex-translate"
+  },
+  "keywords": [
+    "translate",
+    "yandex"
+  ]
 }
