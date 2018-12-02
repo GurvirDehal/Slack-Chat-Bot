@@ -1,4 +1,4 @@
-tconst slackEventsApi = require('@slack/events-api');
+const slackEventsApi = require('@slack/events-api');
 const SlackClient = require('@slack/client').WebClient;
 const express = require('express');
 const score = require('./score.json');
@@ -18,34 +18,19 @@ const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
 // *** Initialize event adapter using signing secret from environment variables ***
 const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
-
-const key = 'trnsl.1.1.20181201T210634Z.0b916835f818a2f5.3299f73a9189648ee76382a52136eb27824a592c';
-const translate = require('yandex-translate')(key);
-
-
 //OAuth page
-
-app.get('/auth', function(req, res){
-  if (!req.query.code) { // access denied
-    return;
-  }
-  var data = {form: {
-    client_id: process.env.SLACK_CLIENT_ID,
-    client_secret: process.env.SLACK_CLIENT_SECRET,
-    code: req.query.code
-  }};
-  request.post('https://slack.com/api/oauth.access', data, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      // Get an auth token
-      let token = JSON.parse(body).access_token;
-      // OAuth done- redirect the user to wherever
-      request.post('https://slack.com/api/team.info', {form: {token: token}}, function (error, response, body) { 
-      if (!error && response.statusCode == 200) { 
-      let team = JSON.parse(body).team.domain; 
-      res.redirect('http://' +team+ '.slack.com'); 
-  } 
-});
-    }
+app.get('/auth', function(req, res){ 
+  let data = {form: { 
+    client_id: process.env.SLACK_CLIENT_ID, 
+    client_secret: process.env.SLACK_CLIENT_SECRET, 
+    code: req.query.code 
+  }}; 
+  request.post('https://slack.com/api/oauth.access', data, function (error, response, body) { 
+    if (!error && response.statusCode == 200) { 
+      // You are done. 
+      // If you want to get team info, you need to get the token here 
+      let token = JSON.parse(body).access_token; // Auth token 
+    } 
   })
 });
 
@@ -62,6 +47,38 @@ app.use('/slack/events', bot.expressMiddleware());
 
 // *** Attach listeners to the event adapter ***
 
+// *** Greeting any user that says "hi" ***
+bot.on('app_mention', (message) => {
+  console.log(message);
+  
+  // Put your code here!
+  // 
+  // What does the `message` object look like?
+  // We want to respond when someone says "hello" to the bot  
+  
+});
+
+// *** Responding to reactions with the same emoji ***
+bot.on('reaction_added', (event) => {
+  console.log(event);
+  // Respond to the reaction back with the same emoji
+  
+  // Put your code here!
+  //
+  // What does the `event` object look like?
+  // We want to respond when someone reacts to _any_ message
+  
+});
+
+bot.on('message.channels', (message) => {
+  console.log(message);
+  
+  // Put your code here!
+  // 
+  // What does the `message` object look like?
+  // We want to respond when someone says "hello" to the bot  
+  
+});
 bot.on('message', (message) => {
   if (message.bot_id) return;
   function send(c,m) {
@@ -80,7 +97,6 @@ bot.on('message', (message) => {
     let index = pair.findIndex(i=> i==message.channel)
 
     if(index+1==pair.length&&pair.length%2 == 1) return;
-    
     let partner = 0;
     if(index%2 == 0){
       partner = index+1;
@@ -156,11 +172,6 @@ bot.on('message', (message) => {
         }
         send(message.channel, 'You have ' + score[message.channel] + ' points')
         break;
-      case('bagle'):
-        function trans(text, language, channel){
-          translate.translate(text, { to: language }, function(err,res){return send(channel,(res['text'][0]))})
-        }
-        trans('works','fr', message.channel)
       default:
         send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
     }
@@ -180,6 +191,7 @@ ${JSON.stringify(error.body)}`);
 });
 
 // Start the express application
-app.listen(() => {
-  console.log(`bot is ready`);
+app.listen(port, () => {
+  console.log(`server listening on port ${port}`);
 });
+
