@@ -29,7 +29,13 @@ app.get('/auth', function(req, res){
     if (!error && response.statusCode == 200) { 
       // You are done. 
       // If you want to get team info, you need to get the token here 
-      let token = JSON.parse(body).access_token; // Auth token 
+      let token = JSON.parse(body).access_token;
+      request.post('https://slack.com/api/team.info', {form: {token: token}}, function (error, response, body) { 
+      if (!error && response.statusCode == 200) { 
+      let team = JSON.parse(body).team.domain; 
+      res.redirect('http://' +team+ '.slack.com'); 
+  } 
+});// Auth token 
     } 
   })
 });
@@ -89,8 +95,8 @@ bot.on('message', (message) => {
   }
   if (message.text == 'help'){
     send(message.channel,'To begin, type `!pair` to get paired to a partner. \n \
-              Once you are paired, you can type `!leave` at any time to leave the conversation. \n \
-              If you would like to report your partner for inappropriate comments, type `!report`.')
+Once you are paired, you can type `!leave` at any time to leave the conversation. \n \
+If you would like to report your partner for inappropriate comments, type `!report`.')
      return;
   }
   if(pair.includes(message.channel)){
@@ -191,6 +197,7 @@ ${JSON.stringify(error.body)}`);
 });
 
 // Start the express application
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`server listening on port ${port}`);
 });
