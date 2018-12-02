@@ -22,16 +22,6 @@ const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 const key = 'trnsl.1.1.20181201T210634Z.0b916835f818a2f5.3299f73a9189648ee76382a52136eb27824a592c';
 const translate = require('yandex-translate')(key);
 
-async function trans(text, language){
-  let translated = '9'
-  await translate.translate(text, { to: language },function(err,res){translated = res['text'][0]})
-  console.log(translated)
-  return translated
-}
-
-let a = trans('works','fr')
-console.log(a)
-
 
 //OAuth page
 
@@ -166,6 +156,11 @@ bot.on('message', (message) => {
         }
         send(message.channel, 'You have ' + score[message.channel] + ' points')
         break;
+      case('bagle'):
+        function trans(text, language, channel){
+          translate.translate(text, { to: language }, function(err,res){return send(channel,(res['text'][0]))})
+        }
+        trans('works','fr', message.channel)
       default:
         send(message.channel, 'Sorry, I did not understand that. Type `help` for help or type `!pair` to get matched.')        
     }
