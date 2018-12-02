@@ -1,4 +1,4 @@
-const slackEventsApi = require('@slack/events-api');
+tconst slackEventsApi = require('@slack/events-api');
 const SlackClient = require('@slack/client').WebClient;
 const express = require('express');
 const score = require('./score.json');
