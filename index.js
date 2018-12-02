@@ -37,7 +37,7 @@ app.get('/auth', function(req, res){
     if (!error && response.statusCode == 200) {
       // Get an auth token
       let oauthToken = JSON.parse(body).access_token;
-      // OAuth done- redirect the user to wherever
+      
       
     }
   })
@@ -57,7 +57,6 @@ app.use('/slack/events', bot.expressMiddleware());
 // *** Attach listeners to the event adapter ***
 
 bot.on('message', (message) => {
-  console.log(message);
   if (message.bot_id) return;
   if (message.channel_type != 'im') return;
   function send(c,m) {
@@ -70,7 +69,7 @@ bot.on('message', (message) => {
   if (message.text == '!help'){
     send(message.channel,'To begin, type `!pair` to get paired to a partner. \n \
 Once you are paired, you can type `!leave` at any time to leave the conversation. \n \
-If you would like to report your partner for inappropriate comments, type `!report`.')
+If you would like to report your partner for inappropriate comments, type `!report`. \n The check your points, type `!points`.')
      return;
   }
   if(pair.includes(message.channel)){
@@ -130,6 +129,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
               send(message.channel, 'es = Spanish, fr = French, ar = Arabic... Usage: `!language es`. For more languages, see iso639-2 codes')
               break
             default:
+              if(message.text.split(' ')[1].length != 2) return send(message.channel, 'Please select a valid language code')
               lan[index] = message.text.split(' ')[1]
               send(message.channel, 'language: ' + message.text.split(' ')[1])
         }
@@ -138,9 +138,8 @@ If you would like to report your partner for inappropriate comments, type `!repo
         if(lan[partner] == 'en') {
           send(pair[partner],message.text);
         } else {
-          trans(message.text, lan[partner], pair[partner])
+          trans(message.text, lan[partner], pair[partner]).catch(error=>{console.log(error)})
         }
-        
     }
   } else {
     switch(message.text){
