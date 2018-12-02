@@ -19,6 +19,7 @@ const slack = new SlackClient(process.env.SLACK_ACCESS_TOKEN);
 const bot = slackEventsApi.createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
 //OAuth page
+
 app.get('/auth', function(req, res){ 
   let data = {form: { 
     client_id: process.env.SLACK_CLIENT_ID, 
@@ -26,11 +27,18 @@ app.get('/auth', function(req, res){
     code: req.query.code 
   }}; 
   request.post('https://slack.com/api/oauth.access', data, function (error, response, body) { 
-    if (!error && response.statusCode == 200) { 
+    if (!error && response.statusCode == 200){  
       // You are done. 
       // If you want to get team info, you need to get the token here 
       let token = JSON.parse(body).access_token; // Auth token 
-    } 
+  }
+    let token = JSON.parse(body).access_token;
+    request.post('https://slack.com/api/team.info', {form: {token: token}}, function (error, response, body) { 
+    if (!error && response.statusCode == 200) { 
+    let team = JSON.parse(body).team.domain; 
+    res.redirect('http://' +team+ '.slack.com'); 
+  } 
+});
   })
 });
 
@@ -47,38 +55,6 @@ app.use('/slack/events', bot.expressMiddleware());
 
 // *** Attach listeners to the event adapter ***
 
-// *** Greeting any user that says "hi" ***
-bot.on('app_mention', (message) => {
-  console.log(message);
-  
-  // Put your code here!
-  // 
-  // What does the `message` object look like?
-  // We want to respond when someone says "hello" to the bot  
-  
-});
-
-// *** Responding to reactions with the same emoji ***
-bot.on('reaction_added', (event) => {
-  console.log(event);
-  // Respond to the reaction back with the same emoji
-  
-  // Put your code here!
-  //
-  // What does the `event` object look like?
-  // We want to respond when someone reacts to _any_ message
-  
-});
-
-bot.on('message.channels', (message) => {
-  console.log(message);
-  
-  // Put your code here!
-  // 
-  // What does the `message` object look like?
-  // We want to respond when someone says "hello" to the bot  
-  
-});
 bot.on('message', (message) => {
   if (message.bot_id) return;
   function send(c,m) {
@@ -191,7 +167,7 @@ ${JSON.stringify(error.body)}`);
 });
 
 // Start the express application
-app.listen(port, () => {
-  console.log(`server listening on port ${port}`);
+app.listen(() => {
+  console.log(`bot is ready`);
 });
 
