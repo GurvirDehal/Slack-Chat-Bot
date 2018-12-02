@@ -7,6 +7,7 @@ const fs = require('fs');
 const request = require('request');
 
 let pair = []
+let lan = []
 
 const app = express();
 
@@ -82,7 +83,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
     } else {
       partner = index-1;
     }
-    switch(message.text){
+    switch(message.text.split(' ')[0]){
       case('!leave'):
         score[pair[index]] += 5
         score[pair[partner]] += 5
@@ -90,8 +91,10 @@ If you would like to report your partner for inappropriate comments, type `!repo
         send(pair[partner],'Your partner has left the chat, you have earned 5 points')
         if(index%2 == 0){
           pair.splice(index,2)
+          lan.splice(index,2)
         } else {
           pair.splice(index-1,2)
+          lan.splice(index-1,2)
         }
         fs.writeFile("./score.json", JSON.stringify(score), (err) => {
               if (err) console.log(err)
@@ -108,13 +111,23 @@ If you would like to report your partner for inappropriate comments, type `!repo
         send(pair[partner],'You have been reported, conversation terminated')
         if(index%2 == 0){
           pair.splice(index,2)
+          lan.splice(index,2)
         } else {
           pair.splice(partner,2)
+          lan.splice(partner,2)
         }
         fs.writeFile("./report.json", JSON.stringify(report), (err) => {
                 if (err) console.log(err)
         });
         break;
+      case('!language'):
+        switch(message.text.split(' ')[1]){
+            case('help'):
+              send(message.channel, 'es = Spanish, fr = French, ar = Arabic... Usage: `!language es`. For more languages, see iso639-2 codes')
+              break
+            default:
+              lan[index] = message.text.split(' ')[1]
+        }
       default:
         send(pair[partner],message.text);
     }
@@ -127,6 +140,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
           }
         }
         pair.push(message.channel)
+        pair.push('en')
         if(pair.length%2 == 1){
           send(message.channel,'Please wait to be paired')
         } else {
@@ -151,11 +165,11 @@ If you would like to report your partner for inappropriate comments, type `!repo
         }
         send(message.channel, 'You have ' + score[message.channel] + ' points')
         break;
-      case('I like moose'):
+      case('un'):
         function trans(content,language,channel){
           translate.translate(content, { to: language }, function(err, res){send(channel,res.text[0]);});
         }
-        trans(message.text,'es',message.channel);
+        trans(message.text,'en',message.channel);
         break;
       default:
         send(message.channel, 'Sorry, I did not understand that. Type `!help` for help or type `!pair` to get matched.')        
