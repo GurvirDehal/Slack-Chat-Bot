@@ -75,7 +75,10 @@ If you would like to report your partner for inappropriate comments, type `!repo
   }
   if(pair.includes(message.channel)){
     let index = pair.findIndex(i=> i==message.channel)
-
+    function trans(content,language,channel){
+          translate.translate(content, { to: language }, function(err, res){send(channel,res.text[0]);});
+        }
+    
     if(index+1==pair.length&&pair.length%2 == 1) return;
     let partner = 0;
     if(index%2 == 0){
@@ -83,6 +86,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
     } else {
       partner = index-1;
     }
+    
     switch(message.text.split(' ')[0]){
       case('!leave'):
         score[pair[index]] += 5
@@ -128,8 +132,14 @@ If you would like to report your partner for inappropriate comments, type `!repo
             default:
               lan[index] = message.text.split(' ')[1]
         }
+        break;
       default:
-        send(pair[partner],message.text);
+        if(lan[partner] == 'en') {
+          send(pair[partner],message.text);
+        } else {
+          trans(message.text, lan[partner], pair[partner])
+        }
+        
     }
   } else {
     switch(message.text){
@@ -140,14 +150,14 @@ If you would like to report your partner for inappropriate comments, type `!repo
           }
         }
         pair.push(message.channel)
-        pair.push('en')
+        lan.push('en')
         if(pair.length%2 == 1){
           send(message.channel,'Please wait to be paired')
         } else {
           send(message.channel,'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-If you would like to report your partner for inappropriate comments, type `!report`.')
+If you would like to report your partner for inappropriate comments, type `!report`. To change the language, use `!language [language]`')
           send(pair[pair.length-2],'You have been paired. Type `!leave` at any time to leave the conversation. \n \
-If you would like to report your partner for inappropriate comments, type `!report`.')
+If you would like to report your partner for inappropriate comments, type `!report`. To change the language, use `!language [language]`')
         }
         if(!score[message.channel]){
           score[message.channel] = 0
@@ -165,12 +175,7 @@ If you would like to report your partner for inappropriate comments, type `!repo
         }
         send(message.channel, 'You have ' + score[message.channel] + ' points')
         break;
-      case('un'):
-        function trans(content,language,channel){
-          translate.translate(content, { to: language }, function(err, res){send(channel,res.text[0]);});
-        }
-        trans(message.text,'en',message.channel);
-        break;
+
       default:
         send(message.channel, 'Sorry, I did not understand that. Type `!help` for help or type `!pair` to get matched.')        
     }
